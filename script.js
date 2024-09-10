@@ -5,7 +5,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
-
+var coordinates = [0,0];
 var geocoder = L.Control.Geocoder.nominatim();
 
 function setAdress(adress) {
@@ -36,9 +36,19 @@ async function InsertImages(tags){
 }
 
 const textInput = document.getElementById('input');
-    textInput.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' && textInput.value != "") {
-        InsertImages(textInput.value);
-        textInput.value = "";
-      }
+textInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && textInput.value != "") {
+    InsertImages(textInput.value);
+    textInput.value = "";
+    }
+});
+
+const images = document.getElementsByClassName("image-style");
+Array.prototype.slice.call(images).forEach(element => {
+    element.addEventListener('click', (event) => {
+        const coordResp = FetchFlickr("flickr.photos.geo.getLocation", "photo_id="+element.src.split("/")[4].split("_")[0])
+        coordinates[0] = coordResp["photo"]["location"]["latitude"];
+        coordinates[1] = coordResp["photo"]["location"]["longitude"];
+        console.log(coordinates)
     });
+});
