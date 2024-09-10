@@ -45,8 +45,8 @@ textInput.addEventListener('keydown', (event) => {
 
 const images = document.getElementsByClassName("image-style");
 Array.prototype.slice.call(images).forEach(element => {
-    element.addEventListener('click', (event) => {
-        const coordResp = FetchFlickr("flickr.photos.geo.getLocation", "photo_id="+element.src.split("/")[4].split("_")[0])
+    element.addEventListener('click', async (event) => {
+        const coordResp = await FetchFlickr("flickr.photos.geo.getLocation", "photo_id="+element.src.split("/")[4].split("_")[0])
         coordinates[0] = coordResp["photo"]["location"]["latitude"];
         coordinates[1] = coordResp["photo"]["location"]["longitude"];
         console.log(coordinates)
