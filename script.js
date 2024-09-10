@@ -1,14 +1,24 @@
+// elements & consts
+const textInput = document.querySelector('#input');
+const mapElement = document.querySelector('#map');
+const imageElement = document.querySelector('#image-container');
+const inspectElement = document.querySelector('#inspect-panel');
+const inspectImage = document.querySelector('#inspect-panel .inspect-image-style');
+const inspectTitle = document.querySelector('#inspect-panel .title-style');
+const inspectDescription = document.querySelector('#inspect-panel .text-style');
+const inspectTags = document.querySelector('#inspect-panel #inspect-tags');
+const image_count = 10;
 
+//#region leaflet.js
 var geomap = L.map('map').setView([0, 0],13);
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(geomap);
 
-var coordinates = [0,0];
-var imageInfo = {};
 var geocoder = L.Control.Geocoder.nominatim();
-
+//#endregion leaflet.js
+//#region our functions
 function setAdress(adress) {
   geocoder.geocode(adress, function(results) {
     var r = results[0];
@@ -26,22 +36,44 @@ async function FetchFlickr(method, param){
     console.log(data);  
     return data;
 }
+
 async function SearchByCoordinates(lat, lon){
     const fetched = await FetchFlickr("flickr.photos.search", "lat="+lat+"&lon="+lon+"&has_geo=1&media=photos&per_page=10");
     const photos = fetched["photos"]["photo"]
-    console.log(photos);
     return photos;
 }
+
 async function InsertImages(tags){
-    const container = document.getElementById("image-container").children;
     const fetched = await FetchFlickr("flickr.photos.search", "tags="+tags+"&has_geo=1&media=photos&per_page=10");
+    console.log(fetched["photos"]["photo"])
     const photos = fetched["photos"]["photo"]
-    for(let i = 0; i < container.length; i++){
-        container[i].src = "https://live.staticflickr.com/"+photos[i]["server"]+"/"+photos[i]["id"]+"_"+photos[i]["secret"]+".jpg";
+
+    for(let i = 0; i < Math.min(photos.length, image_count); i++){
+        imageElement.children[i].src = "https://live.staticflickr.com/"+photos[i]["server"]+"/"+photos[i]["id"]+"_"+photos[i]["secret"]+".jpg";
     }
 }
 
-const textInput = document.getElementById('input');
+function Search(){
+    if (textInput.value != "") {
+        InsertImages(textInput.value);
+        textInput.value = "";
+    }
+}
+
+async function onMapClick(e) {
+    const [lat, lng] = Object.values(geomap.getCenter())
+    const imgs = await SearchByCoordinates(lat, lng);
+    if (imgs.length == 0){
+        return;
+    }
+    for(let i = 0; i < image_count; i++){
+        imageElement.children[i].src = "https://live.staticflickr.com/"+imgs[i]["server"]+"/"+imgs[i]["id"]+"_"+imgs[i]["secret"]+".jpg";
+    }
+}
+
+// event listeners
+mapElement.addEventListener('dblclick', onMapClick);
+
 textInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && textInput.value != "") {
     InsertImages(textInput.value);
@@ -51,40 +83,24 @@ textInput.addEventListener('keydown', (event) => {
 
 const images = document.getElementsByClassName("image-style");
 Array.prototype.slice.call(images).forEach(element => {
+    var imageInfo = {};
+    var coordinates = [0,0];
     element.addEventListener('click', async (event) => {
         const infoAns = await FetchFlickr("flickr.photos.getInfo", "photo_id="+element.src.split("/")[4].split("_")[0])
         imageInfo = infoAns["photo"];
         coordinates[0] = infoAns["photo"]["location"]["latitude"];
         coordinates[1] = infoAns["photo"]["location"]["longitude"];
-        console.log(imageInfo)
+       
+        inspectImage.src = element.src;
+        inspectTitle.innerHTML = imageInfo["title"]["_content"];
+        inspectDescription.innerHTML = imageInfo["description"]["_content"];
+
 
     });
 });
 
-function Search(){
-    if (textInput.value != "") {
-        InsertImages(textInput.value);
-        textInput.value = "";
-    }
-}
+
 // init
-const map = document.querySelector('#map');
 
-function onTagClick(tag){
-    InsertImages(tag);
-}
 
-async function onMapClick(e) {
-    const [lat, lng] = Object.values(geomap.getCenter())
-    textInput.value = lat + "," + lng;
-    const imgs = await SearchByCoordinates(lat, lng);
-    if (imgs.length == 0){
-        return;
-    }
-    const container = document.getElementById("image-container").children;
 
-    for(let i = 0; i < container.length; i++){
-        container[i].src = "https://live.staticflickr.com/"+imgs[i]["server"]+"/"+imgs[i]["id"]+"_"+imgs[i]["secret"]+".jpg";
-    }
-}
-map.addEventListener('dblclick', onMapClick);
