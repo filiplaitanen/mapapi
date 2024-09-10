@@ -6,6 +6,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 var coordinates = [0,0];
+var imageInfo = {};
 var geocoder = L.Control.Geocoder.nominatim();
 
 function setAdress(adress) {
@@ -46,9 +47,11 @@ textInput.addEventListener('keydown', (event) => {
 const images = document.getElementsByClassName("image-style");
 Array.prototype.slice.call(images).forEach(element => {
     element.addEventListener('click', async (event) => {
-        const coordResp = await FetchFlickr("flickr.photos.geo.getLocation", "photo_id="+element.src.split("/")[4].split("_")[0])
-        coordinates[0] = coordResp["photo"]["location"]["latitude"];
-        coordinates[1] = coordResp["photo"]["location"]["longitude"];
-        console.log(coordinates)
+        const infoAns = await FetchFlickr("flickr.photos.getInfo", "photo_id="+element.src.split("/")[4].split("_")[0])
+        imageInfo = infoAns["photo"];
+        coordinates[0] = infoAns["photo"]["location"]["latitude"];
+        coordinates[1] = infoAns["photo"]["location"]["longitude"];
+        console.log(imageInfo)
+
     });
 });
