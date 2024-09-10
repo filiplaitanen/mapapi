@@ -55,3 +55,10 @@ Array.prototype.slice.call(images).forEach(element => {
 
     });
 });
+
+function Search(){
+    if (textInput.value != "") {
+        InsertImages(textInput.value);
+        textInput.value = "";
+    }
+}
