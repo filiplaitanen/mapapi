@@ -19,24 +19,26 @@ function setAdress(adress) {
     }
   });
 }
-
-async function SearchImage(){
-    const response = await fetch("https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=321f88dd6522f5ca711e9518babee1ac&tags=tree,water&format=json&nojsoncallback=1&has_geo=1");
-
-    //const data = await response.json(); 
+async function FetchFlickr(method, param){
+    const response = await fetch("https://www.flickr.com/services/rest/?method="+method+"&api_key=321f88dd6522f5ca711e9518babee1ac&format=json&nojsoncallback=1&"+param);
     const data = await response.json(); 
-    InsertImages(data);
-
     console.log(data);  
+    return data;
 }
 
-function InsertImages(json){
+async function InsertImages(tags){
     const container = document.getElementById("image-container").children;
-    const photos = json["photos"]["photo"];
-    console.log(photos[0]);
-
+    const fetched = await FetchFlickr("flickr.photos.search", "tags="+tags+"&has_geo=1&media=photos&per_page=10");
+    const photos = fetched["photos"]["photo"]
     for(let i = 0; i < container.length; i++){
         container[i].src = "https://live.staticflickr.com/"+photos[i]["server"]+"/"+photos[i]["id"]+"_"+photos[i]["secret"]+".jpg";
     }
 }
-SearchImage();
+
+const textInput = document.getElementById('input');
+    textInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && textInput.value != "") {
+        InsertImages(textInput.value);
+        textInput.value = "";
+      }
+    });
