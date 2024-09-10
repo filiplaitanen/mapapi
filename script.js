@@ -1,9 +1,9 @@
 
-var map = L.map('map').setView([0, 0],13);
+var geomap = L.map('map').setView([0, 0],13);
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
+}).addTo(geomap);
 
 var coordinates = [0,0];
 var imageInfo = {};
@@ -13,8 +13,8 @@ function setAdress(adress) {
   geocoder.geocode(adress, function(results) {
     var r = results[0];
     if (r) {
-      map.fitBounds(r.bbox);
-      L.marker(r.center).addTo(map)
+        geomap.fitBounds(r.bbox);
+      L.marker(r.center).addTo(geomap)
         .bindPopup(r.html || r.name)
         .openPopup();
     }
@@ -26,7 +26,12 @@ async function FetchFlickr(method, param){
     console.log(data);  
     return data;
 }
-
+async function SearchByCoordinates(lat, lon){
+    const fetched = await FetchFlickr("flickr.photos.search", "lat="+lat+"&lon="+lon+"&has_geo=1&media=photos&per_page=10");
+    const photos = fetched["photos"]["photo"]
+    console.log(photos);
+    return photos;
+}
 async function InsertImages(tags){
     const container = document.getElementById("image-container").children;
     const fetched = await FetchFlickr("flickr.photos.search", "tags="+tags+"&has_geo=1&media=photos&per_page=10");
@@ -62,3 +67,24 @@ function Search(){
         textInput.value = "";
     }
 }
+// init
+const map = document.querySelector('#map');
+
+function onTagClick(tag){
+    InsertImages(tag);
+}
+
+async function onMapClick(e) {
+    const [lat, lng] = Object.values(geomap.getCenter())
+    textInput.value = lat + "," + lng;
+    const imgs = await SearchByCoordinates(lat, lng);
+    if (imgs.length == 0){
+        return;
+    }
+    const container = document.getElementById("image-container").children;
+
+    for(let i = 0; i < container.length; i++){
+        container[i].src = "https://live.staticflickr.com/"+imgs[i]["server"]+"/"+imgs[i]["id"]+"_"+imgs[i]["secret"]+".jpg";
+    }
+}
+map.addEventListener('dblclick', onMapClick);
