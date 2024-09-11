@@ -73,6 +73,10 @@ async function InsertImages(tags){
     console.log(fetched["photos"]["photo"])
     const photos = fetched["photos"]["photo"]
 
+    for(let i = 0; i < markerGroup.length; i++){
+        geomap.removeLayer(markerGroup[i])
+    }
+    markerGroup = [];
     MarkImages(photos)
 
     for(let i = 0; i < Math.min(photos.length, image_count); i++){
@@ -108,8 +112,6 @@ function MarkImages(images){
 }
 
 async function MarkerClick(image){
-
-    aborre = true;
     console.log("clicked marker")
     const infoAns = await FetchFlickr("flickr.photos.getInfo", "photo_id="+image["id"])
     imageInfo = infoAns["photo"];
@@ -124,7 +126,6 @@ async function MarkerClick(image){
         tagElement.innerHTML = tag["_content"];
         inspect.tags.appendChild(tagElement);
     });
-    aborre = false;
 }
 
 // event listeners
