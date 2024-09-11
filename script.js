@@ -15,7 +15,7 @@ const templates = {
     tag: document.querySelector('#tag-template')
 }
 const image_count = 10;
-var aborre = false;
+let aborre = false;
 
 //#region leaflet.js
 
@@ -24,8 +24,9 @@ const basemaps = {
     Satelite:  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
   };
 
-var geomap = L.map('map'
-, {center: [0, 0], zoom: 4,
+let geomap = L.map(map
+, {    center: [0.1, 0],
+    zoom: 11,
     layers: basemaps.StreetView
 }
 );
@@ -35,16 +36,16 @@ L.control.layers(basemaps).addTo(geomap);
 
 
 
-var geocoder = L.Control.Geocoder.nominatim()
+let geocoder = L.Control.Geocoder.nominatim()
 
-var markerGroup = [];
-var latlngs = [];
+let markerGroup = [];
+let latlngs = [];
 
 //#endregion leaflet.js
 //#region our functions
 function setAdress(adress) {
   geocoder.geocode(adress, function(results) {
-    var r = results[0];
+    let r = results[0];
     if (r) {
         geomap.fitBounds(r.bbox);
     
@@ -52,7 +53,7 @@ function setAdress(adress) {
     }
   });
 }
-setAdress("sweden");
+
 async function FetchFlickr(method, param){
     const response = await fetch(`https://www.flickr.com/services/rest/?method=${method}&api_key=${key}&format=json&nojsoncallback=1&${param}`);
     const data = await response.json(); 
@@ -78,18 +79,18 @@ async function InsertImages(tags){
         geomap.removeLayer(markerGroup[i])
     }
     markerGroup = [];
-    var latlngs = [];
+    let latlngs = [];
     MarkImages(photos)
 
     for(let i = 0; i < Math.min(photos.length, image_count); i++){
         imageElement.children[i].src = "https://live.staticflickr.com/"+photos[i]["server"]+"/"+photos[i]["id"]+"_"+photos[i]["secret"]+".jpg";
         latlngs.push([photos[i]["latitude"], photos[i]["longitude"]])
     }
-    console.log(latlngs);
-    var polyline = L.polyline(latlngs, {color: 'red'});
+    let polyline = L.polyline(latlngs, {color: 'red'});
 
     // zoom the map to the polyline
     geomap.fitBounds(polyline.getBounds());
+    
 }
 
 function Search(){
@@ -99,33 +100,36 @@ function Search(){
     }
 }
 
-async function onMapClick(e) {
-    const [lat, lng] = [e.latlng.lat, e.latlng.lng]
+async function onMapClick(lat, lng) {
+    let latlngs = [];
+   
     const imgs = await SearchByCoordinates(lat, lng);
     if (imgs.length == 0){
         return;
     }
-    for(let i = 0; i < image_count; i++){
+    for(let i = 0; i < Math.min(imgs.length, image_count); i++){
         imageElement.children[i].src = `https://live.staticflickr.com/${imgs[i]["server"]}/${imgs[i]["id"]}_${imgs[i]["secret"]}.jpg`;
         latlngs.push([imgs[i]["latitude"], imgs[i]["longitude"]])
     }
-    var polyline = L.polyline(latlngs, {color: 'red'})
+    let polyline = L.polyline(latlngs, {color: 'rgba(255, 255, 255, 0.4)'});
   
     // zoom the map to the polyline
     geomap.fitBounds(polyline.getBounds());
 }
 
-function MarkImages(images){
-    for(let i = 0; i < images.length;i++){
-        console.log(images[i], images[i]["longitude"]);
-        market = L.marker([ images[i]["latitude"] , images[i]["longitude"] ]).on('click', function(e) { MarkerClick(images[i]) }).addTo(geomap);
+function MarkImages(imgs){
+    for(let i = 0; i < Math.min(imgs.length, image_count);i++){
+        //get width and height of image
+        
+        const icon =  L.icon({ iconUrl: "https://live.staticflickr.com/"+imgs[i]["server"]+"/"+imgs[i]["id"]+"_"+imgs[i]["secret"]+".jpg", iconSize: [50, 50] });  
+
+        market = L.marker([ imgs[i]["latitude"] , imgs[i]["longitude"] ] ,{icon:icon}).on('click', function(e) { MarkerClick(imgs[i]) }).addTo(geomap);
         markerGroup.push( market );
         geomap.addLayer(market)
     }
 }
 
 async function MarkerClick(image){
-    console.log("clicked marker")
     const infoAns = await FetchFlickr("flickr.photos.getInfo", "photo_id="+image["id"])
     imageInfo = infoAns["photo"];
 
@@ -134,13 +138,13 @@ async function MarkerClick(image){
     inspect.description.innerHTML = imageInfo["description"]["_content"];
     inspect.tags.innerHTML = "";
     imageInfo["tags"]["tag"].forEach(tag => {
-        var tagElement = templates.tag.cloneNode(true);
+        let tagElement = templates.tag.cloneNode(true);
         tagElement.id = ''
         tagElement.innerHTML = tag["_content"];
         inspect.tags.appendChild(tagElement);
     });
 }
-async function imageClick(element){
+async function imageClick(element, move = true){
     inspect.element.classList.remove('hidden');
     const infoAns = await FetchFlickr("flickr.photos.getInfo", "photo_id="+element.src.split("/")[4].split("_")[0])
     const imageInfo = infoAns["photo"];
@@ -152,7 +156,7 @@ async function imageClick(element){
     inspect.description.innerHTML = imageInfo["description"]["_content"];
     inspect.tags.innerHTML = "";
     imageInfo["tags"]["tag"].forEach(tag => {
-        var tagElement = templates.tag.cloneNode(true);
+        let tagElement = templates.tag.cloneNode(true);
         tagElement.id = ''
         tagElement.innerHTML = tag["_content"];
         inspect.tags.appendChild(tagElement);
@@ -168,37 +172,37 @@ async function imageClick(element){
     if (inspect.tags.innerHTML == ""){
         inspect.tags.innerHTML = "No tags available";
     }
-
-        latlngs = [];
-        latlngs.push([imageInfo["location"]["latitude"], imageInfo["location"]["longitude"]]);
-        var polyline = L.polyline(latlngs, {color: 'red'});
-        geomap.fitBounds(polyline.getBounds());
+    if (move) {
+        geomap.panTo([imageInfo["location"]["latitude"], imageInfo["location"]["longitude"]]);
+    }
 }
 // event listeners
 
 geomap.on('click',async function(e){
-    map.classList.remove('stor-karta');
-    imageElement.classList.remove('hidden');
-    inspect.element.classList.remove('hidden');
 
+    if (inspect.element.classList.contains('hidden')){
+        map.classList.remove('stor-karta');
+        imageElement.classList.remove('hidden');
+        inspect.element.classList.remove('hidden');
+        geomap.invalidateSize(true);
+    }
     for(let i = 0; i < markerGroup.length; i++){
         geomap.removeLayer(markerGroup[i])
     }
-    markerGroup = [];
-    var latlngs = [];
-    markerGroup.push( L.marker([e.latlng.lat, e.latlng.lng]) )
-    geomap.addLayer(markerGroup[0])
-    onMapClick(e);
+    onMapClick(e.latlng.lat, e.latlng.lng);
     imageElement.children[0].onload = () =>
     {
-        imageClick(imageElement.children[0]);
+        imageClick(imageElement.children[0], false);
     }
 });
 
 textInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && textInput.value != "") {
-        map.classList.remove('stor-karta');
-        imageElement.classList.remove('hidden');
+        if (map.classList.contains('stor-karta')){
+            map.classList.remove('stor-karta');
+            imageElement.classList.remove('hidden');
+            geomap.invalidateSize(true);
+        }
         InsertImages(textInput.value);
         textInput.value = "";
     }
@@ -214,6 +218,5 @@ Array.prototype.slice.call(images).forEach(element => {
 
 
 // init
-
-
+setAdress("sweden");
 

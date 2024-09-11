@@ -25,6 +25,14 @@
     grid-column: 1 / 4 !important;
     height: 100% !important;
 }
+.map-point-style {
+    min-width: 50px;
+    min-height: 50px;
+    
+    border: 1px solid black;
+    cursor: pointer;
+}
+
 .search-style {
  
     background-color: var(--main-bg-color);
