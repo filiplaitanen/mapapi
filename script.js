@@ -167,6 +167,16 @@ Array.prototype.slice.call(images).forEach(element => {
             inspect.tags.appendChild(tagElement);
         });
 
+        
+        if (inspect.description.innerHTML == ""){
+            inspect.description.innerHTML = "No description available";
+        }
+        if (inspect.title.innerHTML == ""){
+            inspect.title.innerHTML = "No title available";
+        }
+        if (inspect.tags.innerHTML == ""){
+            inspect.tags.innerHTML = "No tags available";
+        }
     });
 });
 
