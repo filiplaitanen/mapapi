@@ -2,11 +2,17 @@
 const textInput = document.querySelector('#input');
 const mapElement = document.querySelector('#map');
 const imageElement = document.querySelector('#image-container');
-const inspectElement = document.querySelector('#inspect-panel');
-const inspectImage = document.querySelector('#inspect-panel .inspect-image-style');
-const inspectTitle = document.querySelector('#inspect-panel .title-style');
-const inspectDescription = document.querySelector('#inspect-panel .text-style');
-const inspectTags = document.querySelector('#inspect-panel #inspect-tags');
+
+const inspect = {
+    image: document.querySelector('#inspect-panel .inspect-image-style'),
+    title: document.querySelector('#inspect-panel .title-style'),
+    description: document.querySelector('#inspect-panel .text-style'),
+    tags: document.querySelector('#inspect-panel #inspect-tags'),
+    element: document.querySelector('#inspect-panel')
+}
+const templates = {
+    tag: document.querySelector('#tag-template')
+}
 const image_count = 10;
 
 //#region leaflet.js
@@ -91,10 +97,16 @@ Array.prototype.slice.call(images).forEach(element => {
         coordinates[0] = infoAns["photo"]["location"]["latitude"];
         coordinates[1] = infoAns["photo"]["location"]["longitude"];
        
-        inspectImage.src = element.src;
-        inspectTitle.innerHTML = imageInfo["title"]["_content"];
-        inspectDescription.innerHTML = imageInfo["description"]["_content"];
-
+        inspect.image.src = element.src;
+        inspect.title.innerHTML = imageInfo["title"]["_content"];
+        inspect.description.innerHTML = imageInfo["description"]["_content"];
+        inspect.tags.innerHTML = "";
+        imageInfo["tags"]["tag"].forEach(tag => {
+            var tagElement = templates.tag.cloneNode(true);
+            tagElement.id = ''
+            tagElement.innerHTML = tag["_content"];
+            inspect.tags.appendChild(tagElement);
+        });
 
     });
 });

@@ -15,7 +15,9 @@
     padding: 0;
     box-sizing: border-box;
 }
-
+.hidden {
+    display: none;
+}
 .search-style {
  
     background-color: var(--main-bg-color);
