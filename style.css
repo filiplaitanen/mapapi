@@ -118,7 +118,7 @@
     margin: auto;
     width: auto;
     max-width: 100%;
-    max-height: 300px;
+    max-height: 40vh;
     object-fit: cover;
     border-radius: var(--main-border-radius);
     box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.3);
