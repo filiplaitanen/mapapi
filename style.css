@@ -1,3 +1,4 @@
+
 :root{
     --main-bg-color: #f1f1f1;
     --main-text-color: #333;
@@ -15,8 +16,14 @@
     padding: 0;
     box-sizing: border-box;
 }
+
 .hidden {
-    display: none;
+    display: none !important;
+}
+.stor-karta {   
+    grid-row: 1 / 4 !important;
+    grid-column: 1 / 4 !important;
+    height: 100% !important;
 }
 .search-style {
  

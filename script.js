@@ -109,8 +109,8 @@ async function onMapClick(e) {
         imageElement.children[i].src = `https://live.staticflickr.com/${imgs[i]["server"]}/${imgs[i]["id"]}_${imgs[i]["secret"]}.jpg`;
         latlngs.push([imgs[i]["latitude"], imgs[i]["longitude"]])
     }
-    var polyline = L.polyline(latlngs, {color: 'red'});
-
+    var polyline = L.polyline(latlngs, {color: 'red'})
+  
     // zoom the map to the polyline
     geomap.fitBounds(polyline.getBounds());
 }
@@ -140,10 +140,47 @@ async function MarkerClick(image){
         inspect.tags.appendChild(tagElement);
     });
 }
+async function imageClick(element){
+    inspect.element.classList.remove('hidden');
+    const infoAns = await FetchFlickr("flickr.photos.getInfo", "photo_id="+element.src.split("/")[4].split("_")[0])
+    const imageInfo = infoAns["photo"];
+    //coordinates[0] = infoAns["photo"]["location"]["latitude"];
+    //coordinates[1] = infoAns["photo"]["location"]["longitude"];
+   
+    inspect.image.src = element.src;
+    inspect.title.innerHTML = imageInfo["title"]["_content"];
+    inspect.description.innerHTML = imageInfo["description"]["_content"];
+    inspect.tags.innerHTML = "";
+    imageInfo["tags"]["tag"].forEach(tag => {
+        var tagElement = templates.tag.cloneNode(true);
+        tagElement.id = ''
+        tagElement.innerHTML = tag["_content"];
+        inspect.tags.appendChild(tagElement);
+    });
 
+    
+    if (inspect.description.innerHTML == ""){
+        inspect.description.innerHTML = "No description available";
+    }
+    if (inspect.title.innerHTML == ""){
+        inspect.title.innerHTML = "No title available";
+    }
+    if (inspect.tags.innerHTML == ""){
+        inspect.tags.innerHTML = "No tags available";
+    }
+
+        latlngs = [];
+        latlngs.push([imageInfo["location"]["latitude"], imageInfo["location"]["longitude"]]);
+        var polyline = L.polyline(latlngs, {color: 'red'});
+        geomap.fitBounds(polyline.getBounds());
+}
 // event listeners
 
-geomap.on('click', function(e){
+geomap.on('click',async function(e){
+    map.classList.remove('stor-karta');
+    imageElement.classList.remove('hidden');
+    inspect.element.classList.remove('hidden');
+
     for(let i = 0; i < markerGroup.length; i++){
         geomap.removeLayer(markerGroup[i])
     }
@@ -152,54 +189,28 @@ geomap.on('click', function(e){
     markerGroup.push( L.marker([e.latlng.lat, e.latlng.lng]) )
     geomap.addLayer(markerGroup[0])
     onMapClick(e);
+    imageElement.children[0].onload = () =>
+    {
+        imageClick(imageElement.children[0]);
+    }
 });
 
 textInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && textInput.value != "") {
-    InsertImages(textInput.value);
-    textInput.value = "";
+        map.classList.remove('stor-karta');
+        imageElement.classList.remove('hidden');
+        InsertImages(textInput.value);
+        textInput.value = "";
     }
 });
 
 const images = document.getElementsByClassName("image-style");
 Array.prototype.slice.call(images).forEach(element => {
-    var imageInfo = {};
-    var coordinates = [0,0];
-    element.addEventListener('click', async (event) => {
-        const infoAns = await FetchFlickr("flickr.photos.getInfo", "photo_id="+element.src.split("/")[4].split("_")[0])
-        imageInfo = infoAns["photo"];
-        coordinates[0] = infoAns["photo"]["location"]["latitude"];
-        coordinates[1] = infoAns["photo"]["location"]["longitude"];
-       
-        inspect.image.src = element.src;
-        inspect.title.innerHTML = imageInfo["title"]["_content"];
-        inspect.description.innerHTML = imageInfo["description"]["_content"];
-        inspect.tags.innerHTML = "";
-        imageInfo["tags"]["tag"].forEach(tag => {
-            var tagElement = templates.tag.cloneNode(true);
-            tagElement.id = ''
-            tagElement.innerHTML = tag["_content"];
-            inspect.tags.appendChild(tagElement);
-        });
-
-        
-        if (inspect.description.innerHTML == ""){
-            inspect.description.innerHTML = "No description available";
-        }
-        if (inspect.title.innerHTML == ""){
-            inspect.title.innerHTML = "No title available";
-        }
-        if (inspect.tags.innerHTML == ""){
-            inspect.tags.innerHTML = "No tags available";
-        }
-
-        latlngs = [];
-        console.log(imageInfo);
-        latlngs.push([imageInfo["location"]["latitude"], imageInfo["location"]["longitude"]]);
-        var polyline = L.polyline(latlngs, {color: 'red'});
-        geomap.fitBounds(polyline.getBounds());
+    element.addEventListener('click', (event) => {
+        imageClick(element);
     });
-});
+} );
+
 
 
 // init
