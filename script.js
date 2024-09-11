@@ -192,6 +192,12 @@ Array.prototype.slice.call(images).forEach(element => {
         if (inspect.tags.innerHTML == ""){
             inspect.tags.innerHTML = "No tags available";
         }
+
+        latlngs = [];
+        console.log(imageInfo);
+        latlngs.push([imageInfo["location"]["latitude"], imageInfo["location"]["longitude"]]);
+        var polyline = L.polyline(latlngs, {color: 'red'});
+        geomap.fitBounds(polyline.getBounds());
     });
 });
 
