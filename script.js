@@ -79,28 +79,8 @@ async function onMapClick(e) {
 }
 
 // event listeners
-/*
-var [lattempd, lngtempd] = [0,0];
-var [lattempu, lngtempu] = [0,0];
-mapElement.addEventListener('mousedown', (e) => {
-    [lattempd, lngtempd] = Object.values(geomap.getCenter());
-});
 
-var marker;
-
-mapElement.addEventListener('mouseup', (e) => {
-    [lattempu, lngtempu] = Object.values(geomap.getCenter());
-    if( lattempu == lattempd && lngtempu == lngtempd ){
-        try{geomap.removeLayer(marker);} catch {}
-        marker = new L.marker([lattempu,lngtempu]).addTo(geomap)
-        geomap.addLayer(marker)
-        console.log(L.control.mousePosition())
-        onMapClick();
-    }
-});
-*/
 geomap.on('click', function(e){
-    alert("Lat, Lon : " + e.latlng.lat + ", " + e.latlng.lng)
     try{geomap.removeLayer(marker);} catch {}
     marker = new L.marker([e.latlng.lat, e.latlng.lng]).addTo(geomap)
     geomap.addLayer(marker)
