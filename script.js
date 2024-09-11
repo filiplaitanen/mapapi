@@ -15,6 +15,7 @@ const templates = {
     tag: document.querySelector('#tag-template')
 }
 const image_count = 10;
+var aborre = false;
 
 //#region leaflet.js
 
@@ -36,8 +37,7 @@ L.control.layers(basemaps).addTo(geomap);
 
 var geocoder = L.Control.Geocoder.nominatim()
 
-
-
+var markerGroup = [];
 
 //#endregion leaflet.js
 //#region our functions
@@ -60,15 +60,20 @@ async function FetchFlickr(method, param){
 }
 
 async function SearchByCoordinates(lat, lon){
-    const fetched = await FetchFlickr("flickr.photos.search", `lat=${lat}&lon=${lon}&has_geo=1&media=photos&per_page=10`);
+    const fetched = await FetchFlickr("flickr.photos.search", `lat=${lat}&lon=${lon}&has_geo=1&media=photos&per_page=10&extras=geo`);
     const photos = fetched["photos"]["photo"]
+
+    MarkImages(photos)
+
     return photos;
 }
 
 async function InsertImages(tags){
-    const fetched = await FetchFlickr("flickr.photos.search", `tags=${tags}&has_geo=1&media=photos&per_page=10`);
+    const fetched = await FetchFlickr("flickr.photos.search", `tags=${tags}&has_geo=1&media=photos&per_page=10&extras=geo`);
     console.log(fetched["photos"]["photo"])
     const photos = fetched["photos"]["photo"]
+
+    MarkImages(photos)
 
     for(let i = 0; i < Math.min(photos.length, image_count); i++){
         imageElement.children[i].src = "https://live.staticflickr.com/"+photos[i]["server"]+"/"+photos[i]["id"]+"_"+photos[i]["secret"]+".jpg";
@@ -93,12 +98,44 @@ async function onMapClick(e) {
     }
 }
 
+function MarkImages(images){
+    for(let i = 0; i < images.length;i++){
+        console.log(images[i], images[i]["longitude"]);
+        market = L.marker([ images[i]["latitude"] , images[i]["longitude"] ]).on('click', function(e) { MarkerClick(images[i]) }).addTo(geomap);
+        markerGroup.push( market );
+        geomap.addLayer(market)
+    }
+}
+
+async function MarkerClick(image){
+
+    aborre = true;
+    console.log("clicked marker")
+    const infoAns = await FetchFlickr("flickr.photos.getInfo", "photo_id="+image["id"])
+    imageInfo = infoAns["photo"];
+
+    inspect.image.src = "https://live.staticflickr.com/"+imageInfo["server"]+"/"+imageInfo["id"]+"_"+imageInfo["secret"]+".jpg";
+    inspect.title.innerHTML = imageInfo["title"]["_content"];
+    inspect.description.innerHTML = imageInfo["description"]["_content"];
+    inspect.tags.innerHTML = "";
+    imageInfo["tags"]["tag"].forEach(tag => {
+        var tagElement = templates.tag.cloneNode(true);
+        tagElement.id = ''
+        tagElement.innerHTML = tag["_content"];
+        inspect.tags.appendChild(tagElement);
+    });
+    aborre = false;
+}
+
 // event listeners
 
 geomap.on('click', function(e){
-    try{geomap.removeLayer(marker);} catch {}
-    marker = new L.marker([e.latlng.lat, e.latlng.lng]).addTo(geomap)
-    geomap.addLayer(marker)
+    for(let i = 0; i < markerGroup.length; i++){
+        geomap.removeLayer(markerGroup[i])
+    }
+    markerGroup = [];
+    markerGroup.push( L.marker([e.latlng.lat, e.latlng.lng]) )
+    geomap.addLayer(markerGroup[0])
     onMapClick(e);
 });
 
