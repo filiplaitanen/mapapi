@@ -38,6 +38,7 @@ L.control.layers(basemaps).addTo(geomap);
 var geocoder = L.Control.Geocoder.nominatim()
 
 var markerGroup = [];
+var latlngs = [];
 
 //#endregion leaflet.js
 //#region our functions
@@ -73,11 +74,22 @@ async function InsertImages(tags){
     console.log(fetched["photos"]["photo"])
     const photos = fetched["photos"]["photo"]
 
+    for(let i = 0; i < markerGroup.length; i++){
+        geomap.removeLayer(markerGroup[i])
+    }
+    markerGroup = [];
+    var latlngs = [];
     MarkImages(photos)
 
     for(let i = 0; i < Math.min(photos.length, image_count); i++){
         imageElement.children[i].src = "https://live.staticflickr.com/"+photos[i]["server"]+"/"+photos[i]["id"]+"_"+photos[i]["secret"]+".jpg";
+        latlngs.push([photos[i]["latitude"], photos[i]["longitude"]])
     }
+    console.log(latlngs);
+    var polyline = L.polyline(latlngs, {color: 'red'});
+
+    // zoom the map to the polyline
+    geomap.fitBounds(polyline.getBounds());
 }
 
 function Search(){
@@ -95,7 +107,12 @@ async function onMapClick(e) {
     }
     for(let i = 0; i < image_count; i++){
         imageElement.children[i].src = `https://live.staticflickr.com/${imgs[i]["server"]}/${imgs[i]["id"]}_${imgs[i]["secret"]}.jpg`;
+        latlngs.push([imgs[i]["latitude"], imgs[i]["longitude"]])
     }
+    var polyline = L.polyline(latlngs, {color: 'red'});
+
+    // zoom the map to the polyline
+    geomap.fitBounds(polyline.getBounds());
 }
 
 function MarkImages(images){
@@ -108,8 +125,6 @@ function MarkImages(images){
 }
 
 async function MarkerClick(image){
-
-    aborre = true;
     console.log("clicked marker")
     const infoAns = await FetchFlickr("flickr.photos.getInfo", "photo_id="+image["id"])
     imageInfo = infoAns["photo"];
@@ -124,7 +139,6 @@ async function MarkerClick(image){
         tagElement.innerHTML = tag["_content"];
         inspect.tags.appendChild(tagElement);
     });
-    aborre = false;
 }
 
 // event listeners
@@ -134,6 +148,7 @@ geomap.on('click', function(e){
         geomap.removeLayer(markerGroup[i])
     }
     markerGroup = [];
+    var latlngs = [];
     markerGroup.push( L.marker([e.latlng.lat, e.latlng.lng]) )
     geomap.addLayer(markerGroup[0])
     onMapClick(e);
