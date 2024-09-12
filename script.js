@@ -5,7 +5,7 @@ const imageElement = document.querySelector('#image-container');
 const key = "321f88dd6522f5ca711e9518babee1ac";
 
 const inspect = {
-    image: document.querySelector('#inspect-panel .inspect-image-style'),
+    image: document.querySelector('#inspect-panel #inspect-photo'),
     title: document.querySelector('#inspect-panel .title-style'),
     description: document.querySelector('#inspect-panel .text-style'),
     tags: document.querySelector('#inspect-panel #inspect-tags'),
@@ -140,8 +140,11 @@ function MarkImages(imgs){
 }
 
 async function MarkerClick(image){
-    const infoAns = await FetchFlickr("flickr.photos.getInfo", "photo_id="+image["id"])
-    imageInfo = infoAns["photo"];
+    const element = Object.values(imageElement.children).find(element => element.src == "https://live.staticflickr.com/"+image["server"]+"/"+image["id"]+"_"+image["secret"]+".jpg");
+    console.log("https://live.staticflickr.com/"+image["server"]+"/"+image["id"]+"_"+image["secret"]+".jpg");
+    imageClick(element);
+    
+
 
     inspect.image.src = "https://live.staticflickr.com/"+imageInfo["server"]+"/"+imageInfo["id"]+"_"+imageInfo["secret"]+".jpg";
     inspect.title.innerHTML = imageInfo["title"]["_content"];

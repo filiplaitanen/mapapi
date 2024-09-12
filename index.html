@@ -24,17 +24,17 @@
         <div id="tag-template" class="tag-style">@</div>
     </div>
     <header>
-        <h1 class="title-style">Potato-app🥔</h1>
+            <h1 class="title-style">Potato-app🥔</h1>
+            <button class="button-style" onclick="Search();"><img src="images/icons/search.svg" alt="search-icon" class="icon-style"></button>
+            <input type="text" id="input" class="search-style" placeholder="Search">
     </header>
     
-    <div id="search-input">
-        <button class="button-style" onclick="Search();"><img src="images/icons/search.svg" alt="search-icon" class="icon-style"></button>
-        <input type="text" id="input" class="search-style" placeholder="Search">
-    </div>
+    
     <main id="main-content">
         <div id="inspect-panel" class="panel-style hidden">
-            <img class="inspect-image-style" src="images/map-placeholder.jpg">
             <h2 class="title-style">Irl-me</h2>
+
+            <img id="inspect-photo" class="inspect-image-style" src="images/map-placeholder.jpg">
             <div id="inspect-tags"></div>
             <p class="text-style">This-is-a-picture-of-me-in-real-life. I am a potato.</p>
     
