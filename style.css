@@ -110,8 +110,7 @@
     object-fit: cover;
     border-radius: var(--main-border-radius);
     margin: 0;
-    padding: 20px;
-    opacity: 0.5;
+    padding: 0;
     box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.3);
 
     border: 1px solid var(--main-border-color);
