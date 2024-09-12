@@ -96,6 +96,16 @@ async function InsertImages(tags){
 function Search(){
     if (textInput.value != "") {
         InsertImages(textInput.value);
+        if (inspect.element.classList.contains('hidden')){
+            map.classList.remove('stor-karta');
+            imageElement.classList.remove('hidden');
+            inspect.element.classList.remove('hidden');
+            geomap.invalidateSize(true);
+        }
+        imageElement.children[0].onload = () =>
+        {
+            imageClick(imageElement.children[0], false);
+        }
         textInput.value = "";
     }
 }
@@ -143,6 +153,18 @@ async function MarkerClick(image){
         tagElement.innerHTML = tag["_content"];
         inspect.tags.appendChild(tagElement);
     });
+
+    const tags = document.getElementsByClassName("tag-style");
+    Array.prototype.slice.call(tags).forEach(element => {
+        element.addEventListener('click', (event) => {
+            if (map.classList.contains('stor-karta')){
+                map.classList.remove('stor-karta');
+                imageElement.classList.remove('hidden');
+                geomap.invalidateSize(true);
+            }
+            InsertImages(element.innerHTML);
+        });
+    } );
 }
 async function imageClick(element, move = true){
     inspect.element.classList.remove('hidden');
@@ -161,6 +183,18 @@ async function imageClick(element, move = true){
         tagElement.innerHTML = tag["_content"];
         inspect.tags.appendChild(tagElement);
     });
+
+    const tags = document.getElementsByClassName("tag-style");
+    Array.prototype.slice.call(tags).forEach(element => {
+        element.addEventListener('click', (event) => {
+            if (map.classList.contains('stor-karta')){
+                map.classList.remove('stor-karta');
+                imageElement.classList.remove('hidden');
+                geomap.invalidateSize(true);
+            }
+            InsertImages(element.innerHTML);
+        });
+    } );
 
     
     if (inspect.description.innerHTML == ""){
@@ -203,7 +237,7 @@ textInput.addEventListener('keydown', (event) => {
             imageElement.classList.remove('hidden');
             geomap.invalidateSize(true);
         }
-        InsertImages(textInput.value);
+        Search();
         textInput.value = "";
     }
 });
@@ -214,7 +248,6 @@ Array.prototype.slice.call(images).forEach(element => {
         imageClick(element);
     });
 } );
-
 
 
 // init
