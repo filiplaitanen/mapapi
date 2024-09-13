@@ -25,8 +25,24 @@
     </div>
     <header>
             <h1 class="title-style">Potato-app🥔</h1>
+            <div id="search-panel">
             <button class="button-style" onclick="Search();"><img src="images/icons/search.svg" alt="search-icon" class="icon-style"></button>
             <input type="text" id="input" class="search-style" placeholder="Search">
+            <select id="search-type" class="select-style">
+                <option value="text">text</option>
+                <option value="tags">Tags</option>
+            </select>
+            <select id="search-sort" class="select-style">
+                <option value="date-posted">Date posted</option>
+                <option value="date-taken">Date taken</option>
+                <option value="interestingness">Interestingness</option>
+                <option value="relevance">Relevance</option>
+            </select>
+            <select id="search-order" class="select-style">
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </select>
+        </div>
     </header>
     
     

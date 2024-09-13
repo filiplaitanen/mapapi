@@ -4,6 +4,13 @@ const mapElement = document.querySelector('#map');
 const imageElement = document.querySelector('#image-container');
 const key = "321f88dd6522f5ca711e9518babee1ac";
 
+const search = {
+    text: document.querySelector('#search-panel #input'),
+    button: document.querySelector('#search-panel button'),
+    type: document.querySelector('#search-panel #search-type'),
+    sort: document.querySelector('#search-panel #search-sort'),
+    order: document.querySelector('#search-panel #search-order'),
+}
 const inspect = {
     image: document.querySelector('#inspect-panel #inspect-photo'),
     title: document.querySelector('#inspect-panel .title-style'),
@@ -70,8 +77,22 @@ async function SearchByCoordinates(lat, lon){
     return photos;
 }
 
-async function InsertImages(tags){
-    const fetched = await FetchFlickr("flickr.photos.search", `tags=${tags}&has_geo=1&media=photos&per_page=10&extras=geo`);
+async function InsertImages(input, type="text", sort="relevance", order="asc") {
+    let query = "has_geo=1&per_page=10&extras=geo";
+    if (type == "text") {
+        query += `&text=${input}`;
+    } else if (type == "tag") {
+        query += `&tag_mode=all&tags=${input}`;
+    }
+
+    if (sort == "relevance") {
+        query += `&sort=${sort}`;
+    } else {
+        query += `&sort=${sort}-${order}`;
+    }
+
+
+    const fetched = await FetchFlickr("flickr.photos.search", query);
     console.log(fetched["photos"]["photo"])
     const photos = fetched["photos"]["photo"]
 
@@ -95,7 +116,7 @@ async function InsertImages(tags){
 
 function Search(){
     if (textInput.value != "") {
-        InsertImages(textInput.value);
+        InsertImages(textInput.value, search.type.value, search.sort.value, search.order.value);
         if (inspect.element.classList.contains('hidden')){
             map.classList.remove('stor-karta');
             imageElement.classList.remove('hidden');
@@ -231,6 +252,8 @@ geomap.on('click',async function(e){
     {
         imageClick(imageElement.children[0], false);
     }
+    textInput.value = "";
+
 });
 
 textInput.addEventListener('keydown', (event) => {
